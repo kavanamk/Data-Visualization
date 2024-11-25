@@ -1,0 +1,117 @@
+
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(ggcorrplot)
+library(dplyr)  # For data manipulation
+library(fastDummies)  # For dummy variable creation
+pk<- read.csv("~/Desktop/DV/Final Project/cleaned_police_killings.csv", stringsAsFactors=TRUE)
+pk$raceethnicity <- factor(pk$raceethnicity)
+pk$gender <- factor(pk$gender)
+pk$income_level <- cut(pk$p_income, breaks=c(0, 20000, 40000, 60000, 80000, Inf), 
+                       labels=c("Low", "Lower-Middle", "Middle", "Upper-Middle", "High"))
+pk$state <- factor(pk$state)
+
+head(pk)
+
+```
+
+1.8. Intersectional Variables
+
+```{r}
+data <- pk[, c("raceethnicity", "gender", "age", "armed", "cause", 
+               "p_income", "latitude", "longitude")]
+data_dummy <- fastDummies::dummy_cols(data, 
+                                      select_columns = c("raceethnicity", "gender", "armed", "cause"), 
+                                      remove_first_dummy = TRUE, 
+                                      remove_selected_columns = TRUE)
+corr_matrix <- round(cor(data_dummy), 2)
+
+ggcorrplot(corr_matrix, 
+           hc.order = TRUE,  
+           lab = TRUE, 
+           lab_size = 3, 
+           method = "square", 
+           colors = c("red", "white", "blue"), 
+           title = "Correlation Heatmap: Intersectional Variables",
+           ggtheme = theme_minimal())
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

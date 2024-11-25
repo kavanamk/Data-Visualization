@@ -1,0 +1,154 @@
+---
+title: "Project Milestone 3"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-11-04"
+output: pdf_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+pk<- read.csv("~/Desktop/DV/Final Project/cleaned_data.csv", stringsAsFactors=TRUE)
+pk$race<- factor(pk$race)
+pk$gender <- factor
+pk$income_level_str <- cut(pk$Income, breaks=c(0, 20000, 40000, 60000, 80000, Inf), 
+                       labels=c("Low", "Lower-Middle", "Middle", "Upper-Middle", "High"))
+pk$income_level<-factor(pk$income_level_str, 
+                                    levels = c("Low", "Lower-Middle", "Middle", "Upper-Middle", "High"),
+                                    labels = c("0-20,000", "20,001-40,000", "40,001-60,000", "60,001-80,000", "80,001+"))
+pk$state <- factor(pk$state)
+# Load necessary library
+library(dplyr)
+
+# Assuming your data frame is named 'pk' and has a column 'state' with abbreviations
+# Create a named vector with state abbreviations and their corresponding full names
+state_map <- c(
+  "AL" = "Alabama", "AK" = "Alaska", "AZ" = "Arizona", "AR" = "Arkansas", "CA" = "California",
+  "CO" = "Colorado", "CT" = "Connecticut", "DE" = "Delaware", "FL" = "Florida", "GA" = "Georgia",
+  "HI" = "Hawaii", "ID" = "Idaho", "IL" = "Illinois", "IN" = "Indiana", "IA" = "Iowa",
+  "KS" = "Kansas", "KY" = "Kentucky", "LA" = "Louisiana", "ME" = "Maine", "MD" = "Maryland",
+  "MA" = "Massachusetts", "MI" = "Michigan", "MN" = "Minnesota", "MS" = "Mississippi",
+  "MO" = "Missouri", "MT" = "Montana", "NE" = "Nebraska", "NV" = "Nevada", "NH" = "New Hampshire",
+  "NJ" = "New Jersey", "NM" = "New Mexico", "NY" = "New York", "NC" = "North Carolina",
+  "ND" = "North Dakota", "OH" = "Ohio", "OK" = "Oklahoma", "OR" = "Oregon", "PA" = "Pennsylvania",
+  "RI" = "Rhode Island", "SC" = "South Carolina", "SD" = "South Dakota", "TN" = "Tennessee",
+  "TX" = "Texas", "UT" = "Utah", "VT" = "Vermont", "VA" = "Virginia", "WA" = "Washington",
+  "WV" = "West Virginia", "WI" = "Wisconsin", "WY" = "Wyoming"
+)
+
+# Replace state abbreviations with full names
+pk <- pk %>%
+  mutate(state = state_map[state])
+
+# Check the updated data frame
+head(pk)
+
+head(pk)
+```
+
+```{r}
+
+# Aggregate data to count the number of occurrences (kills) for each category
+heatmap_data <- pk %>%
+  count(race, gender, income_level, income_level_str, name = "kill_count")
+
+# Create a new variable combining race and gender for the y-axis
+heatmap_data$race_gender <- paste(heatmap_data$race, heatmap_data$gender, sep = ", ")
+
+# Create t
+# Load necessary library
+library(ggplot2)
+library(dplyr)
+
+# Update income_level labels to show ranges
+heatmap_data$income_level <- factor(heatmap_data$income_level, 
+                                    levels = c("Low", "Lower-Middle", "Middle", "Upper-Middle", "High"),
+                                    labels = c("0-20,000", "20,001-40,000", "40,001-60,000", "60,001-80,000", "80,001+"))
+
+# Create the heatmap with updated x-axis labels
+ggplot(heatmap_data, aes(x = income_level, y = race_gender, fill = kill_count)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightpink", high = "darkred") +  # Updated color gradient
+  geom_text(aes(label = kill_count), color = "black", size = 3) +  # Adding number of kills
+  labs(
+    title = "Heatmap of Kill Counts by Race, Gender, and Income Level",
+    x = "Income Range",
+    y = "Race and Gender",
+    fill = "Kill Count"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+Heatmap Analysis of Police Killings
+
+
+The heatmap visualizes the relationship between race, gender, and income levels in relation to police killings.
+•	Axes:
+o	Y-Axis: The y-axis represents combinations of race and gender, showcasing profiles such as White males, Black males, and Hispanic males.
+o	X-Axis: The x-axis categorizes income levels, including Low, Lower-Middle, and some Middle-income brackets.
+•	Kill Counts: The intensity of the colors within the heatmap indicates the number of killings, with darker colors representing higher kill counts. This allows for easy identification of high-risk profiles. Specifically, the heatmap reveals that White males, Black males, and Hispanic males, particularly those in the Low and Lower-Middle income categories, constitute the most significant high-risk profiles.
+•	Further Investigation: These high-risk profiles can be further explored through an interactive chloropleth density map, which provides a geographic context for the data. An interactive dashboard could incorporate filters for various categories, allowing users to analyze the data dynamically.
+•	Geographic Context: The dashboard could enable the creation of a risk profile that ranges from high to low risk based on geographic locations. It can focus on regions such as the West, East, and Middle of the United States, along with major cities including New York, Chicago, Texas, Florida (Miami), Los Angeles, and Seattle. This spatial analysis would provide valuable insights into how race, gender, and income levels intersect with police violence across different locales.
+By utilizing this heatmap in conjunction with an interactive dashboard, stakeholders can identify and analyze the multifaceted nature of police killings, ultimately aiming to inform policy decisions and community interventions.
+
+
+```{r}
+# Filter the top 5 profiles based on kill count
+top_profiles <- heatmap_data %>%
+  arrange(desc(kill_count)) %>%  # Sort in descending order of kill count
+  head(5)  # Select the top 5 profiles
+
+# Print the top 5 profiles
+print(top_profiles)
+# Save the DataFrame 'pk' as a CSV file
+write.csv(pk, "/Users/kavanamanvi/Desktop/DV/pk_clean.csv", row.names = FALSE)
+
+
+```
+
+
+
+```{r}
+
+install.packages("vcd")
+install.packages("dplyr")
+
+# Load libraries
+library(vcd)
+library(dplyr)
+# Create a contingency table
+contingency_table <- pk %>%
+  group_by(race, gender, income_level) %>%
+  summarise(killings = sum(killings)) %>%
+  spread(key = income_level, value = killings, fill = 0) %>%
+  as.table()
+
+```
+
+
+
+```{r}
+
+
+```
+
+
+
+```{r}
+
+
+```
+
+
+
+```{r}
+
+
+```
+
+

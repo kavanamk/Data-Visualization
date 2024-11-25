@@ -1,0 +1,129 @@
+---
+title: "CSC 465 Homework 1"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-09-15"
+output: pdf_document
+---
+
+## Question 1
+
+### (20 pts) For this problem, we’ll look at data about Intel stock (Intel-1998 dataset fromthe website). The data covers stock market trading for the Intel corporation in 1998.Each row is a day, with the following columns: Date, Trading Day (integer day number, including skips), Open (price at market open), High (highest price of day), Low (lowest price of day), Close (price at market close), Volume (shares traded), and Adj. Close (adjusted closing price, meaning accounting for stock splits, which are not a problem in this data). 
+
+#### a. Graph the closing price vs. the date with an ordinary line graph. If you use Tableau, you need to right-click on the Date and choose Exact Date from the dropdown menu so that it uses the full date with "day". 
+
+```{r}
+Intel.1998 <- read.csv("~/Desktop/DV/HW1/Intel-1998.csv")
+library("dplyr")
+library("ggplot2")
+library("mosaic")
+library("lubridate")
+
+Intel <- Intel.1998 %>%
+  mutate(Date = mdy(Date))
+
+ggplot(data=Intel, aes(x=as.Date(Date), y=Close)) +
+    geom_line(color="green") +
+    labs(title="Closing Price vs. Date", x="Date", y="Closing Price")
+```
+
+#### b.Graph the Volume vs. the exact Date as in the last part with a bar graph. 
+```{r}
+library("scales")
+ggplot(data=Intel, aes(x=as.Date(Date), y=Volume)) +
+  geom_col(fill="blue") +  # Use geom_col() for bar heights
+  labs(title="Volume vs. Date", x="Date", y="Volume in Millions") +
+  scale_y_continuous(labels = label_number(scale = 1e-6, suffix = "M")) +
+  theme_minimal()
+```
+
+#### c.Create a scatterplot that graphs the Volume on the x-axis and the daily price range on the y-axis. You will need to create an additional column thatcontains the "range" of the prices for the day as the difference between the fields High and Low.  Range = High – Low 
+
+```{r}
+Intel$Range <- Intel$High - Intel$Low
+head(Intel)
+ggplot(data=Intel, aes(x=Volume, y=Range)) +
+  geom_point(color="red", alpha=0.6) +  # Scatter plot with blue points
+  labs(title="Daily Price Range vs Volume", x="Volume", y="Daily Price Range") + scale_x_continuous(labels = label_number(scale = 1e-6, suffix = "M")) +
+  theme_minimal()
+```
+
+
+```{r}
+
+cellPlans = data.frame(
+         c("ATT", "Sprint", "Verizon", "ATT", "Sprint",
+           "Verizon", "ATT", "Sprint", "Verizon", "ATT",
+           "Verizon", "Sprint", "Verizon", "ATT",
+           "Verizon", "Sprint", "ATT", "ATT", "Sprint"),
+         c(1, 1, 2, 3, 3, 4, 6, 6, 8, 10, 12, 12, 16, 16,
+           24, 24, 25, 30, 40),
+         c(30, 20, 35, 40, 30, 50, 60, 45, 70, 80, 80, 60,
+           90, 90, 110, 80, 110, 135, 100))
+    names(cellPlans) = c("Company", "DataGB", "Price")
+```
+
+# Stacked Bar Plot: 
+Distribution of Data Plans Across Companies
+Objective: The goal of this visualization is to show the distribution of data plans across price ranges for each company, making it easy to see which company offers more plans in certain price brackets.
+
+```{r}
+# Create a price range bin to group the plans into different price categories
+cellPlans$PriceRange <- cut(cellPlans$Price, breaks=c(0, 50, 100, 150), labels=c("0-50", "51-100", "101-150"))
+
+# Create the stacked bar plot
+ggplot(cellPlans, aes(x = PriceRange, fill = Company)) +
+  geom_bar(position = "stack") +
+  labs(title = "Distribution of Data Plans Across Companies by Price Range",
+       x = "Price Range ($)",
+       y = "Number of Plans") +
+  theme_minimal()
+
+```
+
+What it shows: This stacked bar plot shows the number of plans each company offers across different price ranges. The x-axis represents price ranges (e.g., 0-50, 51-100, etc.), and the y-axis shows the number of plans. Each bar is divided into sections representing the number of plans offered by each company.
+
+What the user can infer: The user can quickly see how many data plans are offered by ATT, Sprint, and Verizon in each price range. For example, Sprint may dominate the lower price range (0-50), while Verizon could have more plans in the higher price range (101-150). This graph helps users understand the concentration of pricing plans for each company and the price segment each company focuses on.
+
+
+```{r}
+# Create bins for DataGB
+cellPlans <- cellPlans %>%
+  mutate(DataGB_Bin = cut(DataGB, breaks = c(0, 5, 15, 30, Inf), 
+                          labels = c("Low", "Mid", "High", "Very High"), 
+                          right = FALSE))
+
+# Count the number of plans for each company within each bin
+num_plans_df <- cellPlans %>%
+  group_by(Company, DataGB_Bin) %>%
+  summarise(Plan_Count = n(), .groups = 'drop')
+
+# View summary_df
+print(num_plans_df)
+ggplot(num_plans_df, aes(x = DataGB_Bin, y = Plan_Count, fill = Company)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Count of different Data Range Plans Offered by Companies",
+       x = "DataGB Range",
+       y = "Number of Plans") +
+  theme_minimal()
+```
+
+
+```{r}
+
+ggplot(cellPlans, aes(x = DataGB, y = Price, color = Company, group = Company)) +
+  geom_line(size = 0.8) +
+  geom_point(size = 2) +
+  labs(title = "Price Trend of Data Plans by Company and DataGB Size",
+       x = "DataGB (Data Plan Size)",
+       y = "Price (USD)") +
+  theme_minimal() +scale_fill_brewer(palette = "Set1") 
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

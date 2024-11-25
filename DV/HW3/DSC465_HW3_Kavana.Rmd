@@ -1,0 +1,120 @@
+---
+title: "DSC 465 HOMEWORK 3"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-10-19"
+output: pdf_document
+---
+## Question 2 B
+
+```{r}
+messier <- read.csv("~/Downloads/MessierData.csv")
+head(messier)
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(scales)
+data <- messier %>% select(Kind, Distance..LY.)
+data <- data %>%
+  mutate(Kind = factor(Kind, levels = names(sort(tapply(Distance..LY., Kind, median)))))
+
+```
+
+```{r}
+# Create the plot with a log-transformed y-axis showing powers of 10
+ggplot(data, aes(x = Kind, y = Distance..LY.)) +
+  geom_boxplot(fill = "lightpink", color = "black") +
+  scale_y_log10(
+    breaks = trans_breaks("log10", function(x) 10^x),  # Set breaks as powers of 10
+    labels = trans_format("log10", math_format(10^.x))  # Format labels as 10^x
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Distances to Objects by Kind",
+    x = "Kind",
+    y = "Distance (Light Years, Log Scale)"
+  ) +
+  theme(axis.text.x = element_text( hjust = 1))
+
+```
+
+##Question 4 A
+
+```{r}
+
+library(ggplot2)
+airq <-read.csv("~/Desktop/DV/HW3/AirQuality.csv")
+
+
+ggplot(airq, aes(x = Wind, y = Solar.R)) +
+  geom_point(alpha = 0.75) + 
+  geom_smooth(method = "lm", se = FALSE, color = "red") + 
+  labs(
+    title = "Relationship Between Wind and Solar Radiation", 
+    x = "Wind",
+    y = "Solar Radiation"
+  ) +
+  theme_minimal()
+
+```
+
+##Question 4 B
+
+```{r}
+
+ggplot(airq, aes(x = Wind, fill = "Wind")) +
+  geom_density(alpha = 0.6) +
+  geom_density(aes(x = Solar.R, fill = "Solar.R"), alpha = 0.5) +
+  labs(x = "Value", y = "Density", fill = "Variable") +
+  scale_fill_manual(values = c("Wind" = "blue", "Solar.R" = "orange")) + 
+  ggtitle("Density Plot of Wind and Solar Radiation") + 
+  theme_minimal()
+
+```
+
+##Question 4 C
+
+```{r}
+
+library(reshape2)
+
+
+airq_melt <- melt(airq, id.vars = "Month")
+
+ggplot(airq_melt, aes(x = value, fill = variable)) +
+  geom_density(alpha = 0.5) +
+  labs(x = "Value", y = "Density", fill = "Variable") +
+  ggtitle("Density Plot of Air Quality Variables") + 
+  theme_minimal()
+
+```
+
+
+
+```{r}
+
+library(ggforce)
+airq_melted <- reshape2::melt(airq, id.vars = "Month")
+max_value <- ceiling(max(airq_melted$value) / 100) * 100
+x_limits <- c(0, 300)
+
+ggplot(airq_melted, aes(x = value, fill = variable)) +
+  geom_density(alpha = 0.6) +
+  labs(x = "Value", y = "Density", fill = "Variable") +
+    ggtitle("Induvidual Density Plots of Air Quality Variables") +
+  theme_minimal() +
+  facet_wrap_paginate(~ variable, scales = "free", nrow = 2, ncol = 3)
+
+```
+
+
+##Question 4 D
+
+```{r}
+qqplot(airq$Wind, airq$Solar.R,
+       xlab = "Wind", ylab = "Solar.R", main = "QQ Plot")
+abline(0, 1, col = "red")
+```
+

@@ -1,0 +1,223 @@
+---
+title: "Final Report"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-11-18"
+output: pdf_document
+---
+
+```{r}
+pk<- read.csv("~/Desktop/DV/Final Project/cleaned_data.csv", stringsAsFactors=TRUE)
+head(pk)
+```
+
+
+# Exploration
+
+
+
+##  Correlation heatmap
+
+
+```{r}
+library(ggcorrplot)
+pk$race <- factor(pk$race)
+pk$gender <- factor(pk$gender)
+```
+
+
+
+```{r}
+data <- pk[, c("race", "gender", "age", 
+               "Income","flee","signs_of_mental_illness")]
+data_dummy <- fastDummies::dummy_cols(data, 
+                                      select_columns = c("race", "gender",  "flee","signs_of_mental_illness"), 
+                                      remove_first_dummy = TRUE, 
+                                      remove_selected_columns = TRUE)
+corr_matrix <- round(cor(data_dummy), 2)
+
+
+```
+
+
+
+```{r}
+# Replace NA, NaN, and Inf values with 0
+corr_matrix[is.na(corr_matrix)] <- 0
+corr_matrix[is.nan(corr_matrix)] <- 0
+corr_matrix[is.infinite(corr_matrix)] <- 0
+```
+
+```{r}
+# Plot the heatmap with exact values
+ggcorrplot(corr_matrix, 
+           lab = TRUE, 
+           lab_size = 3, 
+           method = "square", 
+           colors = c("red", "white", "blue"), 
+           title = "Correlation Heatmap: Intersectional Variables",
+           ggtheme = theme_minimal())
+
+```
+
+
+
+
+
+
+
+```{r }
+
+# Load necessary library
+library(dplyr)
+
+# Create a mapping of state abbreviations to regions
+state_to_region <- c(
+  "CT" = "Northeast", "ME" = "Northeast", "MA" = "Northeast", 
+  "NH" = "Northeast", "NJ" = "Northeast", "NY" = "Northeast", 
+  "PA" = "Northeast", "RI" = "Northeast", "VT" = "Northeast",
+  
+  "IL" = "Midwest", "IN" = "Midwest", "IA" = "Midwest", "KS" = "Midwest", 
+  "MI" = "Midwest", "MN" = "Midwest", "MO" = "Midwest", "NE" = "Midwest", 
+  "ND" = "Midwest", "OH" = "Midwest", "SD" = "Midwest", "WI" = "Midwest",
+  
+  "AL" = "South", "AR" = "South", "DE" = "South", "FL" = "South", 
+  "GA" = "South", "KY" = "South", "LA" = "South", "MD" = "South", 
+  "MS" = "South", "NC" = "South", "OK" = "South", "SC" = "South", 
+  "TN" = "South", "TX" = "South", "VA" = "South", "WV" = "South",
+  
+  "AK" = "West", "AZ" = "West", "CA" = "West", "CO" = "West", 
+  "HI" = "West", "ID" = "West", "MT" = "West", "NV" = "West", 
+  "NM" = "West", "OR" = "West", "UT" = "West", "WA" = "West", "WY" = "West"
+)
+
+# Add the 'region' column to the 'pk' dataframe
+pk <- pk %>%
+  mutate(region = state_to_region[pk$state])
+
+#remove null race 
+pk<-pk %>%
+    filter(!is.na(race) & race != "O" & race!="")
+# Drop unused levels from the 'race' factor
+pk$race <- droplevels(pk$race)
+unique(pk$race)
+
+
+pk<-pk %>%
+    filter(!is.na(region))
+           
+unique(pk$region)
+# View the updated dataframe
+head(pk)
+
+```
+
+
+```{r }
+library(fmsb)
+library(dplyr)
+library(tidyr)
+library(RColorBrewer)
+
+# Prepare the summary dataset: Count occurrences of races within each region
+region_race_count <- pk %>%
+    group_by(region, race) %>%
+    summarise(count = n(), .groups = 'drop') %>%
+    pivot_wider(names_from = race, values_from = count, values_fill = list(count = 0))
+
+# Normalize the data (scale it to percentages for proportional comparison)
+region_race_count_normalized <- region_race_count %>%
+    mutate(across(-region, ~ . / sum(.) * 100))
+
+# Prepare the data for the radar charts
+region_race_count_normalized <- as.data.frame(region_race_count_normalized)
+row.names(region_race_count_normalized) <- region_race_count_normalized$region
+region_race_count_normalized <- region_race_count_normalized[, -1]
+
+# Set max-min values for the radar charts (scale from 0 to 100%)
+max_min <- data.frame(matrix(c(rep(100, length(unique(pk$race))), rep(0, length(unique(pk$race)))), 
+                             ncol = length(unique(pk$race)), byrow = TRUE))
+colnames(max_min) <- colnames(region_race_count_normalized)
+
+# Define colors for regions using a new palette
+region_colors <- brewer.pal(4, "Set1")
+names(region_colors) <- unique(pk$region)
+
+# Set up the plot area for 4 plots
+par(mfrow = c(2, 2), mar = c(1, 1, 2, 1))
+
+# Create a radar chart for each region
+for (region in unique(pk$region)) {
+    data_for_radar <- rbind(max_min, region_race_count_normalized[region, , drop = FALSE])
+    
+    radarchart(data_for_radar,
+               axistype = 1,
+               pcol = region_colors[region],
+               pfcol = scales::alpha(region_colors[region], 0.5),
+               plwd = 2,
+               cglcol = "grey",
+               cglty = 1,
+               axislabcol = "black",
+               caxislabels = seq(0, 100, 25),
+               cglwd = 0.8,
+               vlcex = 0.8,
+               title = paste("Percentage of Killings by Race in", region))
+}
+
+# Add a legend
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+
+```
+
+
+
+
+
+```{r }
+
+```
+
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+
+
+```{r }
+
+```
+
+

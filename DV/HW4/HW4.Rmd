@@ -1,0 +1,89 @@
+---
+title: "HW4"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-11-04"
+output: pdf_document
+---
+# Question 1
+
+
+```{r}
+pk<- read.csv("~/Desktop/DV/Final Project/cleaned_data.csv", stringsAsFactors=TRUE)
+head(pk)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(ggmosaic)
+# Ensure categorical variables are factors
+pk$raceethnicity <- factor(pk$race)
+pk$gender <- factor(pk$gender)
+pk$income_level <- cut(pk$Income, breaks=c(0, 20000, 40000, 60000, 80000, Inf), 
+                       labels=c("Low", "Lower-Middle", "Middle", "Upper-Middle", "High"))
+pk$state <- factor(pk$state)  
+# Ensure dplyr library is loaded
+library(dplyr)
+
+# Remove rows where race is NA or race is equal to "O"
+pk <- pk %>%
+    filter(!is.na(race) & race != "O")
+
+
+```
+
+
+
+```{r}
+library(ggplot2)
+library(ggmosaic)
+
+# Make sure all your variables are factors
+pk_filtered$race <- factor(pk_filtered$race)
+pk_filtered$gender <- factor(pk_filtered$gender)
+pk_filtered$income_level <- factor(pk_filtered$income_level)
+
+# Create a mosaic plot with three categorical variables
+ggplot(data = pk_filtered) +
+  geom_mosaic(aes(x = product(income_level,gender), fill = race)) +
+  labs(title = "Mosaic Plot of Race and Income Level",
+       x = "Race and Gender",
+       fill = "Race") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+# Save the plot
+ggsave("mosaic_plot_three_vars.jpeg", width = 10, height = 12, path = "/Users/kavanamanvi/Desktop")
+
+```
+
+# Question 2
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+```
+
+```{r}
+# Summarize the data
+heatmap_data <- pk %>%
+  group_by(raceethnicity, gender, income_level) %>%
+  summarise(kill_count = n()) %>%
+  ungroup()
+
+# Generate the heatmap with a light red to dark red color gradient
+ggplot(heatmap_data, aes(x = income_level, y = interaction(raceethnicity, gender), fill = kill_count)) +
+    geom_tile(color = "white") +  
+    scale_fill_gradient(low = "lightpink", high = "darkred") + 
+    labs(title = "Heatmap of Police Killings by Race, Gender, and Income Level",
+         x = "Income Level",
+         y = "Race and Gender Combination",
+         fill = "Number of Killings") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+```

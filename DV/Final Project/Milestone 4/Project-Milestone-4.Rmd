@@ -1,0 +1,90 @@
+---
+title: "Project Milestone 4 DV"
+author: "Kavana Manvi KrishnaMurthy"
+date: "2024-11-09"
+output: html_document
+---
+
+```{r }
+pk<- read.csv("~/Desktop/DV/Final Project/cleaned_data.csv", stringsAsFactors=TRUE)
+head(pk)
+```
+
+```{r }
+library(ggplot2)
+library(ggmosaic)
+# Ensure categorical variables are factors
+pk$raceethnicity <- factor(pk$race)
+pk$gender <- factor(pk$gender)
+income_percentiles <- quantile(pk$Income, probs = c(0, 0.25, 0.5, 0.75, 1))
+
+pk$income_level <- cut(pk$Income, 
+                       breaks = income_percentiles, 
+                       include.lowest = TRUE, 
+                       labels = c(
+                         paste("$", format(round(income_percentiles[1]), big.mark = ","), "–", format(round(income_percentiles[2]), big.mark = ","), sep = ""),
+                         paste("$", format(round(income_percentiles[2]), big.mark = ","), "–", format(round(income_percentiles[3]), big.mark = ","), sep = ""),
+                         paste("$", format(round(income_percentiles[3]), big.mark = ","), "–", format(round(income_percentiles[4]), big.mark = ","), sep = ""),
+                         paste("$", format(round(income_percentiles[4]), big.mark = ","), "–", format(round(income_percentiles[5]), big.mark = ","), sep = "")
+                       ))
+
+# View the income summary to ensure it's working
+summary(pk$Income)
+library(dplyr)
+pk$state <- factor(pk$state)  
+pk_filtered <- pk %>% filter(race != "O")
+pk_filtered_male<-pk %>% filter(gender != "F")
+pk_filtered_female<-pk %>% filter(gender != "M")
+```
+
+
+```{r }
+# Mosaic plot for males (Race vs Income Level)
+plot_male <- ggplot(data = pk_filtered_male) +
+  geom_mosaic(aes(x = product(race, income_level), fill = income_level)) +
+  labs(title = "Mosaic Plot of Race vs Income Level (Male)",
+       x = "Income Level",
+       y = "Race",
+       fill = "Income Level") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Mosaic plot for females (Race vs Income Level)
+plot_female <- ggplot(data = pk_filtered_female) +
+  geom_mosaic(aes(x = product(race, income_level), fill = income_level)) +
+  labs(title = "Mosaic Plot of Race vs Income Level (Female)",
+       x = "Income Level",
+       y ="Race" ,
+       fill = "Income Level") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r }
+# Combine the plots into a grid using patchwork
+library(patchwork)
+plot_male + plot_female
+
+# Save the combined plot as a JPEG
+ggsave("mosaic_plot_male_female_race_income.jpeg", width = 20, height = 12, path = "/Users/kavanamanvi/Desktop")
+```
+
+
+
+
+```{r }
+
+```
+
+
+```{r }
+```
+
+
+```{r }
+```
+
+
